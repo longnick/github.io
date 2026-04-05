@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f766e">
+<title>Xe Khô POS Mobile</title>
+<style>
+:root{
+  --bg:#f3f7f6;--card:#fff;--ink:#16202a;--muted:#6b7785;--line:#dfe7e5;--brand:#0f766e;--brand2:#0b5f58;--danger:#dc2626;--warn:#f59e0b;--good:#16a34a;
+  --shadow:0 10px 24px rgba(15,118,110,.08);--radius:18px;--safe:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif}
+body{padding-bottom:calc(86px + var(--safe));}
+.hidden{display:none!important}
+.app{max-width:980px;margin:0 auto;min-height:100dvh}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(243,247,246,.96);backdrop-filter:blur(12px);padding:max(12px,env(safe-area-inset-top)) 12px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.title{font-size:20px;font-weight:900;letter-spacing:-.03em;margin:0}
+.small{font-size:12px;color:var(--muted)}
+.pillbar{display:flex;gap:8px;overflow:auto;padding-top:10px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.container{padding:12px;display:grid;gap:12px}
+.card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid rgba(15,118,110,.05)}
+.card h2,.card h3{margin:0 0 10px 0;letter-spacing:-.02em}
+.grid{display:grid;gap:12px}
+.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:720px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr}}
+.kpi{padding:12px;border:1px solid var(--line);border-radius:16px;background:#fbfefd}
+.kpi .v{font-size:24px;font-weight:900;margin-top:4px}
+button,.btn,input,select,textarea{font:inherit}
+button,.btn{border:none;border-radius:14px;padding:12px 14px;background:var(--brand);color:#fff;font-weight:800;cursor:pointer}
+button.secondary,.btn.secondary{background:#fff;color:var(--brand2);border:1px solid var(--line)}
+button.ghost{background:transparent;color:var(--brand2);border:1px solid var(--line)}
+button.warn{background:var(--warn)}
+button.danger{background:var(--danger)}
+button.good{background:var(--good)}
+button:disabled{opacity:.55}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.right{margin-left:auto}
+input,select,textarea{width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+label{font-size:12px;color:var(--muted);font-weight:700;display:block;margin:0 0 6px}
+.table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.table-btn{padding:16px;border-radius:18px;border:1px solid var(--line);background:#fff;text-align:left;box-shadow:var(--shadow);min-height:118px;display:flex;flex-direction:column;justify-content:space-between}
+.table-btn.active{border-color:var(--brand);box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#eefcf8;color:#065f46;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800}
+.badge.warn{background:#fff7ed;color:#9a3412}
+.badge.danger{background:#fef2f2;color:#991b1b}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.prod{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:118px}
+.prod .price{font-weight:900;color:var(--brand2)}
+.order-lines{display:grid;gap:10px}
+.line{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fcfffe}
+.linehead{display:flex;gap:8px;align-items:flex-start}
+.lineqty{display:flex;align-items:center;gap:6px;margin-top:8px}
+.lineqty button{padding:8px 12px;border-radius:12px}
+.text-right{text-align:right}
+.totalbox{background:#0f172a;color:#fff;border-radius:20px;padding:14px}
+.totalbox .sum{font-size:28px;font-weight:900}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:35;padding:8px 10px calc(8px + var(--safe));background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+.bottomnav .wrap{max-width:980px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.navbtn{background:#fff;color:var(--muted);border:1px solid var(--line);padding:10px 6px;border-radius:16px;font-size:12px;font-weight:800}
+.navbtn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.section{display:none}
+.section.active{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:80;display:none;align-items:flex-end;justify-content:center;padding:12px}
+.modal.show{display:flex}
+.sheet{background:#fff;border-radius:22px 22px 16px 16px;max-width:760px;width:100%;max-height:90dvh;overflow:auto;padding:16px;box-shadow:0 18px 40px rgba(0,0,0,.2)}
+.handle{width:44px;height:5px;border-radius:999px;background:#d6dce0;margin:0 auto 12px}
+.list{display:grid;gap:10px}
+.item{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
+canvas{width:100%;height:220px;background:#fff;border:1px solid var(--line);border-radius:16px}
+.hr{height:1px;background:var(--line);margin:12px 0}
+.print-bill{font-size:14px;color:#111}
+.print-bill h2{margin:0 0 6px;font-size:20px}
+.chiprow{display:flex;overflow:auto;gap:8px;padding-bottom:6px}
+.chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:800;white-space:nowrap;background:#fff}
+.chip.active{background:#def7f3;border-color:var(--brand);color:var(--brand2)}
+.notice{padding:12px;border-radius:14px;background:#ecfeff;color:#155e75;font-size:13px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="toprow">
+      <div>
+        <h1 class="title" id="shopNameTop">Xe Khô Chữa Lành POS</h1>
+        <div class="small" id="todaySummary">Sẵn sàng bán hàng</div>
+      </div>
+      <div class="row">
+        <button class="secondary" id="btnBackup">Backup</button>
+        <button class="secondary" id="btnRestoreOpen">Khôi phục</button>
+      </div>
+    </div>
+    <div class="pillbar">
+      <div class="pill" id="pillOpenTables">Bàn mở: 0</div>
+      <div class="pill" id="pillTodayRevenue">Doanh thu hôm nay: 0đ</div>
+      <div class="pill" id="pillMonthProfit">Lãi tháng: 0đ</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <section class="section active" id="sec-pos">
+      <div class="card">
+        <div class="row">
+          <h2>POS bán hàng</h2>
+          <div class="right row">
+            <button class="secondary" id="btnNewTable">Mở bàn</button>
+            <button class="secondary" id="btnSplitHelp">HDSD</button>
+          </div>
+        </div>
+        <div class="table-grid" id="tableGrid"></div>
+      </div>
+      <div class="card" id="activeOrderCard">
+        <div class="row">
+          <h2 id="activeTableTitle">Chọn bàn để bắt đầu</h2>
+          <span class="badge" id="activeTableStatus">Chưa có đơn</span>
+        </div>
+        <div class="chiprow" id="categoryChips"></div>
+        <div class="products" id="productGrid"></div>
+        <div class="hr"></div>
+        <div class="order-lines" id="orderLines"></div>
+        <div class="totalbox" style="margin-top:12px">
+          <div class="small" style="color:#cbd5e1">Tạm tính bàn hiện tại</div>
+          <div class="sum" id="orderTotal">0đ</div>
+          <div class="row" style="margin-top:12px">
+            <button class="secondary" id="btnMoveTable">Chuyển bàn</button>
+            <button class="warn" id="btnShowQR">Mã QR</button>
+            <button class="danger" id="btnCancelTable">Huỷ bàn</button>
+            <button class="good right" id="btnCheckout">Thanh toán</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-menu">
+      <div class="card">
+        <div class="row">
+          <h2>Menu & giá bán</h2>
+          <button class="right" id="btnAddProduct">Thêm món</button>
+        </div>
+        <div class="list" id="menuList"></div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <h2>Nguyên liệu & tồn kho</h2>
+          <button class="right" id="btnAddInventory">Thêm nguyên liệu</button>
+        </div>
+        <div class="list" id="inventoryList"></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-reports">
+      <div class="grid cols-3">
+        <div class="kpi"><div class="small">Doanh thu hôm nay</div><div class="v" id="kpiRevenueToday">0đ</div></div>
+        <div class="kpi"><div class="small">Lãi gộp tháng</div><div class="v" id="kpiGrossMonth">0đ</div></div>
+        <div class="kpi"><div class="small">Lợi nhuận tháng</div><div class="v" id="kpiNetMonth">0đ</div></div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <h2>Biểu đồ doanh thu 7 ngày</h2>
+          <button class="secondary right" id="btnPrintReport">In báo cáo</button>
+        </div>
+        <canvas id="chartRevenue" width="700" height="220"></canvas>
+      </div>
+      <div class="card">
+        <h2>Top món bán chạy</h2>
+        <canvas id="chartTopProducts" width="700" height="260"></canvas>
+      </div>
+      <div class="card">
+        <h2>Báo cáo nhanh</h2>
+        <div class="list" id="reportList"></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-bookkeeping">
+      <div class="card">
+        <div class="row"><h2>Chi phí</h2><button class="right" id="btnAddExpense">Thêm chi phí</button></div>
+        <div class="list" id="expenseList"></div>
+      </div>
+      <div class="card">
+        <div class="row"><h2>Sổ quỹ</h2><button class="right" id="btnAddCash">Ghi quỹ</button></div>
+        <div class="list" id="cashbookList"></div>
+      </div>
+      <div class="card">
+        <div class="row"><h2>Nhập kho</h2><button class="right" id="btnReceiveStock">Nhập hàng</button></div>
+        <div class="list" id="stockInList"></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-history">
+      <div class="card">
+        <div class="row"><h2>Lịch sử bill</h2><button class="right secondary" id="btnExportBills">Xuất CSV</button></div>
+        <div class="list" id="billHistoryList"></div>
+      </div>
+      <div class="card">
+        <h2>Cài đặt</h2>
+        <div class="grid cols-2">
+          <div><label>Tên quán</label><input id="setShopName"></div>
+          <div><label>Số bàn</label><input id="setTableCount" type="number" min="1"></div>
+          <div><label>Số tài khoản nhận</label><input id="setBankAcc"></div>
+          <div><label>Ngân hàng</label><input id="setBankId"></div>
+          <div><label>Tên người nhận hiển thị QR</label><input id="setBankName"></div>
+          <div><label>Nội dung bill QR</label><input id="setBillPrefix"></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button id="btnSaveSettings">Lưu cài đặt</button>
+          <button class="secondary" id="btnSeed">Khôi phục dữ liệu mẫu</button>
+          <button class="danger right" id="btnResetAll">Xoá toàn bộ dữ liệu</button>
+        </div>
+        <div class="notice" style="margin-top:12px">Khuyên dùng ổn định nhất trên iPhone là mở bằng Safari từ một địa chỉ HTTPS cố định rồi thêm ra màn hình chính. Dữ liệu đang lưu cục bộ trên máy bằng localStorage.</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="bottomnav">
+  <div class="wrap">
+    <button class="navbtn active" data-sec="pos">POS</button>
+    <button class="navbtn" data-sec="menu">Menu</button>
+    <button class="navbtn" data-sec="reports">Báo cáo</button>
+    <button class="navbtn" data-sec="bookkeeping">Sổ quỹ</button>
+    <button class="navbtn" data-sec="history">Lịch sử</button>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="sheet" id="modalSheet"></div></div>
+<input type="file" id="restoreFile" accept="application/json" class="hidden">
+
+<script>
+const STORAGE_KEY='xe_kho_pos_v2';
+const currency = n => (Number(n)||0).toLocaleString('vi-VN')+'đ';
+const uid = (p='id') => p+'_'+Math.random().toString(36).slice(2,10);
+const nowISO = ()=> new Date().toISOString();
+const todayStr = ()=> new Date().toISOString().slice(0,10);
+const monthStr = ()=> todayStr().slice(0,7);
+const qs = s=>document.querySelector(s);
+const qsa = s=>Array.from(document.querySelectorAll(s));
+const clone = o=> JSON.parse(JSON.stringify(o));
+
+function seedState(){
+  const inv = [
+    ['muc1nang','Mực 1 nắng','phần',30,120000],['muckho','Mực khô','phần',25,80000],['cachivang','Khô cá chỉ vàng','phần',40,25000],['cathieu','Khô cá thiều','phần',30,30000],['goixoai','Xoài bào','phần',20,10000],['changa','Chân gà','phần',20,18000],['nuocmix','Nước mix','ly',30,12000],['tra','Trà tắc/đào','ly',40,8000],['bia','Bia','lon',60,12000],['condiment','Gia vị/phụ','phần',200,3000]
+  ].map(([id,name,unit,qty,cost])=>({id,name,unit,qty,cost}));
+  const products = [
+    {id:'p_m1n_muoiot',name:'Mực 1 nắng nướng muối ớt',price:230000,category:'Món chính',active:true,recipe:[['muc1nang',1],['condiment',1]]},
+    {id:'p_m1n_moi',name:'Mực 1 nắng nướng mọi',price:230000,category:'Món chính',active:true,recipe:[['muc1nang',1],['condiment',1]]},
+    {id:'p_mk_bo_toi',name:'Mực khô chiên bơ tỏi',price:180000,category:'Món chính',active:true,recipe:[['muckho',1],['condiment',2]]},
+    {id:'p_chi_vang',name:'Khô cá chỉ vàng',price:25000,category:'Khô nướng',active:true,recipe:[['cachivang',1],['condiment',1]]},
+    {id:'p_ca_thieu',name:'Khô cá thiều',price:30000,category:'Khô nướng',active:true,recipe:[['cathieu',1],['condiment',1]]},
+    {id:'p_goi_xoai',name:'Gỏi xoài',price:60000,category:'Ăn kèm',active:true,recipe:[['goixoai',1],['condiment',1]]},
+    {id:'p_chan_ga',name:'Chân gà nướng',price:25000,category:'Ăn kèm',active:true,recipe:[['changa',1],['condiment',1]]},
+    {id:'p_nuoc_mix',name:'Nước mix trái cây',price:50000,category:'Đồ uống',active:true,recipe:[['nuocmix',1]]},
+    {id:'p_tra',name:'Trà đào / trà tắc',price:25000,category:'Đồ uống',active:true,recipe:[['tra',1]]},
+    {id:'p_bia',name:'Bia',price:18000,category:'Đồ uống',active:true,recipe:[['bia',1]]},
+    {id:'p_combo1',name:'Combo 1',price:149000,category:'Combo',active:true,recipe:[['muckho',1],['cachivang',1],['cathieu',1],['condiment',2]]},
+    {id:'p_combo2',name:'Combo 2',price:199000,category:'Combo',active:true,recipe:[['muckho',1],['cachivang',1],['cathieu',1],['condiment',3]]},
+    {id:'p_combo3',name:'Combo 3',price:249000,category:'Combo',active:true,recipe:[['muc1nang',1],['cathieu',1],['goixoai',1],['condiment',3]]}
+  ];
+  const tables = Array.from({length:12},(_,i)=>({id:'t'+(i+1),name:'Bàn '+(i+1)}));
+  return {
+    settings:{shopName:'Xe Khô Chữa Lành',tableCount:12,bankAccount:'0937707900',bankId:'vietinbank',bankName:'VU LONG',billPrefix:'XEKHO'},
+    tables, products, inventory:inv, orders:[], receipts:[], expenses:[], cashbook:[], stockIns:[]
+  };
+}
+let state = load();
+let ui = {section:'pos', activeTableId: null, category:'Tất cả'};
+
+function load(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw){return JSON.parse(raw);} }catch(e){}
+  const st = seedState(); save(st); return st;
+}
+function save(st=state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(st)); state=st; }
+function toast(msg){
+  const d=document.createElement('div'); d.textContent=msg; d.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:110px;z-index:120;background:#111827;color:#fff;padding:12px 14px;border-radius:999px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.18)';
+  document.body.appendChild(d); setTimeout(()=>d.remove(),1800);
+}
+function openModal(html){ qs('#modalSheet').innerHTML='<div class="handle"></div>'+html; qs('#modal').classList.add('show'); }
+function closeModal(){ qs('#modal').classList.remove('show'); qs('#modalSheet').innerHTML=''; }
+qs('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+
+function ensureTables(){
+  const n = Math.max(1, Number(state.settings.tableCount)||12);
+  const existing = new Map(state.tables.map(t=>[t.id,t]));
+  state.tables = Array.from({length:n},(_,i)=> existing.get('t'+(i+1)) || ({id:'t'+(i+1),name:'Bàn '+(i+1)}));
+}
+function getOpenOrderByTable(tableId){ return state.orders.find(o=>o.tableId===tableId && o.status==='open'); }
+function getPaidReceipts(){ return state.receipts || []; }
+function getTodayReceipts(){ return getPaidReceipts().filter(r => (r.paidAt||'').slice(0,10)===todayStr()); }
+function getMonthReceipts(){ return getPaidReceipts().filter(r => (r.paidAt||'').slice(0,7)===monthStr()); }
+function getMonthExpenses(){ return state.expenses.filter(x => (x.date||'').slice(0,7)===monthStr()); }
+function calcOrderTotal(order){ return (order?.items||[]).reduce((s,it)=>s+Number(it.price||0)*Number(it.qty||0),0); }
+function orderCost(order){
+  let cost=0; const invMap = new Map(state.inventory.map(i=>[i.id,i]));
+  (order.items||[]).forEach(it=>{
+    const p=state.products.find(p=>p.id===it.productId); if(!p) return;
+    (p.recipe||[]).forEach(([itemId,qty])=>{ const inv = invMap.get(itemId); cost += (Number(inv?.cost||0) * Number(qty||0) * Number(it.qty||0)); });
+  });
+  return cost;
+}
+function dailyRevenue(date=todayStr()){ return getPaidReceipts().filter(r=>(r.paidAt||'').slice(0,10)===date).reduce((s,r)=>s+Number(r.total||0),0); }
+function monthGross(){ return getMonthReceipts().reduce((s,r)=>s+Number(r.total||0)-Number(r.cost||0),0); }
+function monthNet(){ return monthGross() - getMonthExpenses().reduce((s,x)=>s+Number(x.amount||0),0); }
+function categories(){ return ['Tất cả', ...new Set(state.products.filter(p=>p.active).map(p=>p.category||'Khác'))]; }
+function moneyInOutMonth(){
+  const cash = state.cashbook.filter(x=>(x.date||'').slice(0,7)===monthStr());
+  const inAmt = cash.filter(x=>x.type==='in').reduce((s,x)=>s+Number(x.amount||0),0);
+  const outAmt = cash.filter(x=>x.type==='out').reduce((s,x)=>s+Number(x.amount||0),0);
+  return {inAmt,outAmt};
+}
+
+function render(){ ensureTables(); save(); renderHeader(); renderTables(); renderProducts(); renderActiveOrder(); renderMenu(); renderInventory(); renderReports(); renderBookkeeping(); renderHistory(); renderSettings(); }
+function renderHeader(){
+  qs('#shopNameTop').textContent = state.settings.shopName + ' POS';
+  const openCount = state.orders.filter(o=>o.status==='open').length;
+  qs('#pillOpenTables').textContent = 'Bàn mở: '+openCount;
+  qs('#pillTodayRevenue').textContent = 'Doanh thu hôm nay: '+currency(dailyRevenue());
+  qs('#pillMonthProfit').textContent = 'Lãi tháng: '+currency(monthNet());
+  qs('#todaySummary').textContent = `${todayStr()} • ${openCount} bàn đang hoạt động`;
+}
+function renderTables(){
+  const grid = qs('#tableGrid'); grid.innerHTML='';
+  state.tables.forEach(t=>{
+    const open = getOpenOrderByTable(t.id); const total = open ? calcOrderTotal(open) : 0;
+    const btn = document.createElement('button'); btn.className='table-btn'+(ui.activeTableId===t.id?' active':'');
+    btn.innerHTML = `<div><div style="font-weight:900;font-size:18px">${t.name}</div><div class="small">${open?'Đang phục vụ':'Trống'}</div></div><div><span class="badge ${open?'warn':''}">${open?(''+(open.items.length||0)+' món'): 'Sẵn sàng'}</span><div class="small" style="margin-top:8px">${open?currency(total):''}</div></div>`;
+    btn.onclick=()=>{ ui.activeTableId=t.id; if(!open) createOrderIfMissing(t.id); render(); };
+    grid.appendChild(btn);
+  });
+}
+function createOrderIfMissing(tableId){
+  let open = getOpenOrderByTable(tableId);
+  if(!open){ open = {id:uid('order'), tableId, status:'open', createdAt:nowISO(), items:[]}; state.orders.push(open); save(); }
+  ui.activeTableId=tableId; return open;
+}
+function renderProducts(){
+  const chips = qs('#categoryChips'); chips.innerHTML='';
+  categories().forEach(cat=>{ const b=document.createElement('button'); b.className='chip'+(ui.category===cat?' active':''); b.textContent=cat; b.onclick=()=>{ui.category=cat; renderProducts();}; chips.appendChild(b); });
+  const openOrder = ui.activeTableId ? getOpenOrderByTable(ui.activeTableId) || createOrderIfMissing(ui.activeTableId) : null;
+  const grid = qs('#productGrid'); grid.innerHTML='';
+  const filtered = state.products.filter(p=>p.active && (ui.category==='Tất cả'||p.category===ui.category));
+  filtered.forEach(p=>{
+    const el = document.createElement('button'); el.className='prod';
+    const low = hasLowStock(p);
+    el.innerHTML = `<div style="font-weight:900">${p.name}</div><div class="small">${p.category||''}</div><div class="price">${currency(p.price)}</div>${low?'<div class="small" style="color:#b45309">Kho sắp hết</div>':''}`;
+    el.disabled=!openOrder;
+    el.onclick=()=>addProductToOrder(p.id);
+    grid.appendChild(el);
+  });
+}
+function hasLowStock(product){
+  for(const [itemId, qty] of (product.recipe||[])){
+    const inv = state.inventory.find(i=>i.id===itemId); if(inv && Number(inv.qty)<Number(qty)) return true;
+  }
+  return false;
+}
+function addProductToOrder(productId){
+  if(!ui.activeTableId) return toast('Chọn bàn trước');
+  const order = createOrderIfMissing(ui.activeTableId); const p = state.products.find(x=>x.id===productId); if(!p) return;
+  const line = order.items.find(x=>x.productId===productId && !x.notes);
+  if(line) line.qty += 1; else order.items.push({id:uid('line'),productId:p.id,name:p.name,price:p.price,qty:1,notes:''});
+  save(); renderActiveOrder(); renderTables(); renderReports();
+}
+function renderActiveOrder(){
+  const title = qs('#activeTableTitle'); const st = qs('#activeTableStatus'); const lines = qs('#orderLines');
+  if(!ui.activeTableId){ title.textContent='Chọn bàn để bắt đầu'; st.textContent='Chưa có đơn'; lines.innerHTML='<div class="notice">Chọn một bàn trong danh sách phía trên.</div>'; qs('#orderTotal').textContent=currency(0); return; }
+  const table = state.tables.find(t=>t.id===ui.activeTableId); const order = createOrderIfMissing(ui.activeTableId);
+  title.textContent = table.name; st.textContent = order.items.length? 'Đang phục vụ':'Bàn mới mở'; st.className = 'badge'+(order.items.length?' warn':'');
+  lines.innerHTML='';
+  if(!order.items.length){ lines.innerHTML='<div class="notice">Chưa có món. Chạm vào món bên trên để thêm vào bàn này.</div>'; }
+  order.items.forEach(it=>{
+    const div = document.createElement('div'); div.className='line';
+    div.innerHTML = `<div class="linehead"><div><div style="font-weight:900">${it.name}</div><div class="small">${currency(it.price)} / phần</div></div><div class="right text-right"><div style="font-weight:900">${currency(it.price*it.qty)}</div><div class="small">SL ${it.qty}</div></div></div>
+    <div class="row" style="margin-top:8px"><input data-note="${it.id}" placeholder="Ghi chú món" value="${escapeHtml(it.notes||'')}"></div>
+    <div class="lineqty"><button class="secondary" data-minus="${it.id}">-</button><button class="secondary" data-plus="${it.id}">+</button><button class="secondary" data-edit="${it.id}">Sửa giá</button><button class="danger right" data-del="${it.id}">Huỷ món</button></div>`;
+    lines.appendChild(div);
+  });
+  lines.querySelectorAll('[data-minus]').forEach(b=>b.onclick=()=>changeQty(b.dataset.minus,-1));
+  lines.querySelectorAll('[data-plus]').forEach(b=>b.onclick=()=>changeQty(b.dataset.plus,1));
+  lines.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>deleteLine(b.dataset.del));
+  lines.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editLinePrice(b.dataset.edit));
+  lines.querySelectorAll('[data-note]').forEach(inp=>inp.onchange=()=>saveNote(inp.dataset.note, inp.value));
+  qs('#orderTotal').textContent = currency(calcOrderTotal(order));
+}
+function saveNote(lineId,val){ const order=getOpenOrderByTable(ui.activeTableId); const line=order?.items.find(x=>x.id===lineId); if(line){ line.notes=val; save(); } }
+function changeQty(lineId,d){ const order=getOpenOrderByTable(ui.activeTableId); const line=order?.items.find(x=>x.id===lineId); if(!line)return; line.qty+=d; if(line.qty<=0){ order.items=order.items.filter(x=>x.id!==lineId); } save(); render(); }
+function deleteLine(lineId){ const order=getOpenOrderByTable(ui.activeTableId); if(!order)return; order.items=order.items.filter(x=>x.id!==lineId); save(); toast('Đã huỷ món'); render(); }
+function editLinePrice(lineId){ const order=getOpenOrderByTable(ui.activeTableId); const line=order?.items.find(x=>x.id===lineId); if(!line)return;
+  openModal(`<h3>Sửa giá món</h3><label>Giá mới</label><input id="editPrice" type="number" value="${line.price}"><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="saveEditPrice">Lưu</button></div>`);
+  qs('#saveEditPrice').onclick=()=>{ line.price = Number(qs('#editPrice').value||0); save(); closeModal(); render(); };
+}
+function deductInventoryForOrder(order){
+  const invMap = new Map(state.inventory.map(i=>[i.id,i]));
+  for(const line of order.items){
+    const p = state.products.find(x=>x.id===line.productId); if(!p) continue;
+    for(const [itemId, qty] of (p.recipe||[])){
+      const inv = invMap.get(itemId); if(inv){ inv.qty = Number(inv.qty||0) - Number(qty||0) * Number(line.qty||0); }
+    }
+  }
+}
+function checkoutOrder(){
+  const order = getOpenOrderByTable(ui.activeTableId); if(!order) return toast('Không có đơn');
+  if(!order.items.length) return toast('Bàn chưa có món');
+  const total = calcOrderTotal(order);
+  const qrUrl = getQRUrl(total, `${state.settings.billPrefix||'XEKHO'} ${shortBill(order.id)}`);
+  openModal(`<h3>Thanh toán ${getTableName(order.tableId)}</h3>
+    <div class="grid cols-2">
+      <div class="kpi"><div class="small">Tạm tính</div><div class="v">${currency(total)}</div></div>
+      <div class="kpi"><div class="small">Phương thức</div><select id="payMethod"><option value="cash">Tiền mặt</option><option value="transfer">Chuyển khoản</option><option value="mixed">Hỗn hợp</option></select></div>
+    </div>
+    <div class="hr"></div>
+    <div class="row"><button class="secondary" onclick="closeModal()">Đóng</button><button class="warn" id="previewQR">Xem QR</button><button class="good right" id="confirmCheckout">Xác nhận thanh toán</button></div>
+    <div class="notice" style="margin-top:12px">Sau khi thanh toán, app sẽ tự tạo bill, ghi doanh thu, và tự trừ tồn kho.</div>`);
+  qs('#previewQR').onclick=()=>showBillQR(order.id, total, qrUrl);
+  qs('#confirmCheckout').onclick=()=>{
+    const method = qs('#payMethod').value;
+    const total = calcOrderTotal(order); const cost = orderCost(order);
+    deductInventoryForOrder(order);
+    order.status='paid'; order.paidAt=nowISO(); order.total=total; order.cost=cost; order.paymentMethod=method;
+    const receipt = clone(order); receipt.billNo = makeBillNo(); state.receipts.unshift(receipt);
+    state.cashbook.unshift({id:uid('cash'),date:todayStr(),type:'in',category:'Bán hàng',note:receipt.billNo+' - '+getTableName(receipt.tableId),amount:total});
+    save(); closeModal(); printBill(receipt); render();
+  };
+}
+function shortBill(id){ return String(id).split('_').pop().slice(-6).toUpperCase(); }
+function getTableName(tableId){ return state.tables.find(t=>t.id===tableId)?.name || tableId; }
+function makeBillNo(){ const count = getTodayReceipts().length + 1; return `${todayStr().replace(/-/g,'')}-${String(count).padStart(3,'0')}`; }
+function getQRUrl(amount, addInfo){
+  const bankId = encodeURIComponent(state.settings.bankId||'vietinbank');
+  const acc = encodeURIComponent(state.settings.bankAccount||'0937707900');
+  const name = encodeURIComponent(state.settings.bankName||'VU LONG');
+  const info = encodeURIComponent(String(addInfo||'').slice(0,25));
+  return `https://img.vietqr.io/image/${bankId}-${acc}-compact2.jpg?amount=${Math.max(0,Math.round(Number(amount)||0))}&addInfo=${info}&accountName=${name}`;
+}
+function showBillQR(orderId, amount, qrUrl){
+  openModal(`<h3>Mã QR thanh toán</h3><div class="text-right small mono">Bill ${shortBill(orderId)}</div><div class="text-right" style="font-size:28px;font-weight:900">${currency(amount)}</div><div class="hr"></div><div class="text-right small">Ngân hàng: ${escapeHtml(state.settings.bankId)} • STK: ${escapeHtml(state.settings.bankAccount)}</div><div style="display:flex;justify-content:center;margin-top:12px"><img alt="QR thanh toán" src="${qrUrl}" style="width:min(100%,360px);border-radius:18px;border:1px solid var(--line)"></div><div class="notice" style="margin-top:12px">QR được tạo theo cú pháp Quick Link của VietQR.</div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button></div>`);
+}
+function printBill(receipt){
+  const lines = receipt.items.map(it=>`<tr><td>${escapeHtml(it.name)}${it.notes?`<div style="font-size:12px;color:#666">${escapeHtml(it.notes)}</div>`:''}</td><td style="text-align:center">${it.qty}</td><td style="text-align:right">${currency(it.price*it.qty)}</td></tr>`).join('');
+  const qrUrl = getQRUrl(receipt.total, `${state.settings.billPrefix||'XEKHO'} ${receipt.billNo}`);
+  openModal(`<div class="print-bill" id="billPrintArea"><h2>${escapeHtml(state.settings.shopName)}</h2><div>${getTableName(receipt.tableId)} • Bill ${receipt.billNo}</div><div>${new Date(receipt.paidAt).toLocaleString('vi-VN')}</div><div class="hr"></div><table style="width:100%;border-collapse:collapse">${lines}</table><div class="hr"></div><div style="display:flex;justify-content:space-between"><strong>Tổng tiền</strong><strong>${currency(receipt.total)}</strong></div><div style="display:flex;justify-content:space-between"><span>Thanh toán</span><span>${paymentLabel(receipt.paymentMethod)}</span></div><div class="hr"></div><div style="text-align:center"><img src="${qrUrl}" style="width:220px;max-width:100%"><div style="font-size:12px;margin-top:6px">STK ${escapeHtml(state.settings.bankAccount)} - ${escapeHtml(state.settings.bankId)}</div></div></div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="btnWindowPrint">In / Lưu PDF</button></div>`);
+  qs('#btnWindowPrint').onclick=()=>{
+    const w=window.open('','_blank'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Bill</title><style>body{font-family:-apple-system,Arial;padding:20px}table td{padding:6px 0;border-bottom:1px dashed #ddd}</style></head><body>${qs('#billPrintArea').outerHTML}</body></html>`); w.document.close(); w.print();
+  };
+}
+function paymentLabel(v){ return ({cash:'Tiền mặt',transfer:'Chuyển khoản',mixed:'Hỗn hợp'})[v]||v; }
+function cancelTable(){
+  const order = getOpenOrderByTable(ui.activeTableId); if(!order) return toast('Không có bàn mở');
+  openModal(`<h3>Huỷ bàn ${getTableName(order.tableId)}</h3><div class="notice">Thao tác này sẽ xoá toàn bộ món chưa thanh toán của bàn này.</div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="danger right" id="confirmCancelTable">Huỷ bàn ngay</button></div>`);
+  qs('#confirmCancelTable').onclick=()=>{ order.status='cancelled'; order.cancelledAt=nowISO(); closeModal(); save(); toast('Đã huỷ bàn'); render(); };
+}
+function moveTable(){
+  const order = getOpenOrderByTable(ui.activeTableId); if(!order) return toast('Không có bàn để chuyển');
+  const options = state.tables.filter(t=>!getOpenOrderByTable(t.id) || t.id===order.tableId).map(t=>`<option value="${t.id}" ${t.id===order.tableId?'selected':''}>${t.name}</option>`).join('');
+  openModal(`<h3>Chuyển bàn</h3><label>Chọn bàn mới</label><select id="moveTableSelect">${options}</select><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="confirmMoveTable">Xác nhận</button></div>`);
+  qs('#confirmMoveTable').onclick=()=>{ order.tableId = qs('#moveTableSelect').value; ui.activeTableId=order.tableId; save(); closeModal(); toast('Đã chuyển bàn'); render(); };
+}
+
+function renderMenu(){
+  const wrap = qs('#menuList'); wrap.innerHTML='';
+  state.products.forEach(p=>{
+    const recipe = (p.recipe||[]).map(([id,qty])=> `${qty} ${state.inventory.find(x=>x.id===id)?.unit||''} ${state.inventory.find(x=>x.id===id)?.name||id}`).join(', ');
+    const d=document.createElement('div'); d.className='item';
+    d.innerHTML=`<div class="row"><div><div style="font-weight:900">${p.name}</div><div class="small">${p.category||''}</div></div><div class="right text-right"><div style="font-weight:900">${currency(p.price)}</div><div class="small">${p.active?'Đang bán':'Đang ẩn'}</div></div></div><div class="small" style="margin-top:8px">Công thức: ${escapeHtml(recipe||'Chưa khai báo')}</div><div class="row" style="margin-top:10px"><button class="secondary" data-edit-product="${p.id}">Sửa</button><button class="secondary" data-toggle-product="${p.id}">${p.active?'Ẩn':'Bật'}</button><button class="danger right" data-del-product="${p.id}">Xoá</button></div>`;
+    wrap.appendChild(d);
+  });
+  wrap.querySelectorAll('[data-edit-product]').forEach(b=>b.onclick=()=>openProductForm(b.dataset.editProduct));
+  wrap.querySelectorAll('[data-toggle-product]').forEach(b=>b.onclick=()=>{const p=state.products.find(x=>x.id===b.dataset.toggleProduct); p.active=!p.active; save(); render();});
+  wrap.querySelectorAll('[data-del-product]').forEach(b=>b.onclick=()=>{ state.products=state.products.filter(x=>x.id!==b.dataset.delProduct); save(); render(); });
+}
+function openProductForm(id){
+  const p = id ? clone(state.products.find(x=>x.id===id)) : {id:uid('prod'),name:'',price:0,category:'Món chính',active:true,recipe:[]};
+  const invOptions = state.inventory.map(i=>`<option value="${i.id}">${i.name} (${i.unit})</option>`).join('');
+  openModal(`<h3>${id?'Sửa món':'Thêm món mới'}</h3>
+    <div class="grid cols-2">
+      <div><label>Tên món</label><input id="pf_name" value="${escapeHtml(p.name)}"></div>
+      <div><label>Giá bán</label><input id="pf_price" type="number" value="${p.price}"></div>
+      <div><label>Nhóm</label><input id="pf_cat" value="${escapeHtml(p.category||'')}"></div>
+      <div><label>Kích hoạt</label><select id="pf_active"><option value="true" ${p.active?'selected':''}>Đang bán</option><option value="false" ${!p.active?'selected':''}>Đang ẩn</option></select></div>
+    </div>
+    <div class="hr"></div>
+    <h3 style="font-size:16px">Công thức trừ kho</h3>
+    <div id="recipeWrap" class="list"></div>
+    <div class="row" style="margin-top:8px"><select id="rf_item">${invOptions}</select><input id="rf_qty" type="number" step="0.01" placeholder="Số lượng"><button id="btnRecipeAdd">Thêm NL</button></div>
+    <div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="saveProductBtn">Lưu món</button></div>`);
+  function renderRecipe(){ const rw=qs('#recipeWrap'); rw.innerHTML=''; (p.recipe||[]).forEach((r,idx)=>{ const inv=state.inventory.find(i=>i.id===r[0]); const d=document.createElement('div'); d.className='item'; d.innerHTML=`<div class="row"><div>${inv?.name||r[0]} • ${r[1]} ${inv?.unit||''}</div><button class="danger right" data-ridx="${idx}">Xoá</button></div>`; rw.appendChild(d); }); rw.querySelectorAll('[data-ridx]').forEach(b=>b.onclick=()=>{ p.recipe.splice(Number(b.dataset.ridx),1); renderRecipe(); }); }
+  renderRecipe();
+  qs('#btnRecipeAdd').onclick=()=>{ const item=qs('#rf_item').value, qty=Number(qs('#rf_qty').value||0); if(!item||qty<=0) return toast('Nhập nguyên liệu hợp lệ'); p.recipe.push([item,qty]); renderRecipe(); qs('#rf_qty').value=''; };
+  qs('#saveProductBtn').onclick=()=>{ p.name=qs('#pf_name').value.trim(); p.price=Number(qs('#pf_price').value||0); p.category=qs('#pf_cat').value.trim()||'Khác'; p.active=qs('#pf_active').value==='true'; if(!p.name) return toast('Nhập tên món'); const idx=state.products.findIndex(x=>x.id===p.id); if(idx>=0) state.products[idx]=p; else state.products.unshift(p); save(); closeModal(); render(); };
+}
+function renderInventory(){
+  const wrap=qs('#inventoryList'); wrap.innerHTML='';
+  state.inventory.forEach(i=>{ const d=document.createElement('div'); d.className='item'; d.innerHTML=`<div class="row"><div><div style="font-weight:900">${i.name}</div><div class="small">${i.unit} • Giá vốn ${currency(i.cost)}</div></div><div class="right text-right"><div style="font-weight:900">${Number(i.qty).toLocaleString('vi-VN')} ${i.unit}</div><div class="small">Tồn kho</div></div></div><div class="row" style="margin-top:10px"><button class="secondary" data-edit-inv="${i.id}">Sửa</button><button class="warn" data-addqty="${i.id}">+ Nhập thêm</button><button class="danger right" data-del-inv="${i.id}">Xoá</button></div>`; wrap.appendChild(d); });
+  wrap.querySelectorAll('[data-edit-inv]').forEach(b=>b.onclick=()=>openInventoryForm(b.dataset.editInv));
+  wrap.querySelectorAll('[data-addqty]').forEach(b=>b.onclick=()=>openStockInForm(b.dataset.addqty));
+  wrap.querySelectorAll('[data-del-inv]').forEach(b=>b.onclick=()=>{ state.inventory=state.inventory.filter(x=>x.id!==b.dataset.delInv); state.products.forEach(p=>p.recipe=(p.recipe||[]).filter(r=>r[0]!==b.dataset.delInv)); save(); render(); });
+}
+function openInventoryForm(id){
+  const i = id ? clone(state.inventory.find(x=>x.id===id)) : {id:uid('inv'),name:'',unit:'phần',qty:0,cost:0};
+  openModal(`<h3>${id?'Sửa nguyên liệu':'Thêm nguyên liệu'}</h3><div class="grid cols-2"><div><label>Tên</label><input id="if_name" value="${escapeHtml(i.name)}"></div><div><label>Đơn vị</label><input id="if_unit" value="${escapeHtml(i.unit)}"></div><div><label>Tồn hiện tại</label><input id="if_qty" type="number" step="0.01" value="${i.qty}"></div><div><label>Giá vốn / đơn vị</label><input id="if_cost" type="number" step="0.01" value="${i.cost}"></div></div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="saveInvBtn">Lưu</button></div>`);
+  qs('#saveInvBtn').onclick=()=>{ i.name=qs('#if_name').value.trim(); i.unit=qs('#if_unit').value.trim()||'đv'; i.qty=Number(qs('#if_qty').value||0); i.cost=Number(qs('#if_cost').value||0); if(!i.name) return toast('Nhập tên'); const idx=state.inventory.findIndex(x=>x.id===i.id); if(idx>=0) state.inventory[idx]=i; else state.inventory.unshift(i); save(); closeModal(); render(); };
+}
+function openStockInForm(itemId=''){
+  const options = state.inventory.map(i=>`<option value="${i.id}" ${i.id===itemId?'selected':''}>${i.name}</option>`).join('');
+  openModal(`<h3>Nhập hàng vào kho</h3><div class="grid cols-2"><div><label>Nguyên liệu</label><select id="si_item">${options}</select></div><div><label>Số lượng</label><input id="si_qty" type="number" step="0.01"></div><div><label>Giá vốn / đơn vị mới</label><input id="si_cost" type="number" step="0.01"></div><div><label>Ghi chú</label><input id="si_note"></div></div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="saveStockInBtn">Nhập kho</button></div>`);
+  qs('#saveStockInBtn').onclick=()=>{ const id=qs('#si_item').value, qty=Number(qs('#si_qty').value||0), cost=Number(qs('#si_cost').value||0), note=qs('#si_note').value; const inv=state.inventory.find(i=>i.id===id); if(!inv||qty<=0) return toast('Nhập dữ liệu hợp lệ'); inv.qty=Number(inv.qty||0)+qty; if(cost>0) inv.cost=cost; state.stockIns.unshift({id:uid('si'),date:todayStr(),itemId:id,itemName:inv.name,qty,cost:inv.cost,note}); state.cashbook.unshift({id:uid('cash'),date:todayStr(),type:'out',category:'Nhập kho',note:inv.name,amount:qty*Number(inv.cost||0)}); save(); closeModal(); render(); };
+}
+function renderReports(){
+  qs('#kpiRevenueToday').textContent=currency(dailyRevenue()); qs('#kpiGrossMonth').textContent=currency(monthGross()); qs('#kpiNetMonth').textContent=currency(monthNet());
+  drawRevenueChart(); drawTopProductsChart();
+  const list=qs('#reportList'); list.innerHTML='';
+  const {inAmt,outAmt}=moneyInOutMonth();
+  const rows = [
+    ['Doanh thu tháng', getMonthReceipts().reduce((s,r)=>s+Number(r.total||0),0)],
+    ['Giá vốn tháng', getMonthReceipts().reduce((s,r)=>s+Number(r.cost||0),0)],
+    ['Chi phí tháng', getMonthExpenses().reduce((s,x)=>s+Number(x.amount||0),0)],
+    ['Tiền vào sổ quỹ tháng', inAmt],
+    ['Tiền ra sổ quỹ tháng', outAmt],
+    ['Số bill tháng', getMonthReceipts().length],
+    ['Bill trung bình', getMonthReceipts().length ? Math.round(getMonthReceipts().reduce((s,r)=>s+Number(r.total||0),0)/getMonthReceipts().length) : 0],
+  ];
+  rows.forEach(([k,v])=>{ const d=document.createElement('div'); d.className='item'; d.innerHTML=`<div class="row"><div>${k}</div><div class="right" style="font-weight:900">${typeof v==='number'?currency(v):v}</div></div>`; list.appendChild(d); });
+}
+function drawRevenueChart(){
+  const cvs=qs('#chartRevenue'), ctx=cvs.getContext('2d'); ctx.clearRect(0,0,cvs.width,cvs.height); const dates=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); dates.push(d.toISOString().slice(0,10)); }
+  const vals=dates.map(d=>dailyRevenue(d));
+  drawSimpleLineChart(ctx,cvs.width,cvs.height,dates.map(d=>d.slice(5)),vals,'Doanh thu');
+}
+function drawTopProductsChart(){
+  const map = new Map(); getMonthReceipts().forEach(r=>(r.items||[]).forEach(it=>map.set(it.name,(map.get(it.name)||0)+Number(it.qty||0))));
+  const top = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5); const labels=top.map(x=>x[0]); const vals=top.map(x=>x[1]);
+  const cvs=qs('#chartTopProducts'), ctx=cvs.getContext('2d'); ctx.clearRect(0,0,cvs.width,cvs.height); drawSimpleBarChart(ctx,cvs.width,cvs.height,labels,vals,'Top món');
+}
+function drawSimpleLineChart(ctx,w,h,labels,data,title){
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); const pad=42; const max=Math.max(1,...data); const min=0; ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){ const y=pad + (h-pad*2)*(i/3); ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); }
+  ctx.fillStyle='#64748b'; ctx.font='12px sans-serif'; ctx.fillText(title, pad, 20);
+  ctx.strokeStyle='#0f766e'; ctx.lineWidth=3; ctx.beginPath(); data.forEach((v,i)=>{ const x=pad + (w-pad*2)*(i/(Math.max(1,data.length-1))); const y=h-pad - ((v-min)/(max-min||1))*(h-pad*2); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+  ctx.fillStyle='#0f766e'; data.forEach((v,i)=>{ const x=pad + (w-pad*2)*(i/(Math.max(1,data.length-1))); const y=h-pad - ((v-min)/(max-min||1))*(h-pad*2); ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#64748b'; ctx.fillText(labels[i], x-12, h-14); ctx.fillStyle='#0f766e'; });
+}
+function drawSimpleBarChart(ctx,w,h,labels,data,title){
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); const pad=42; const max=Math.max(1,...data); ctx.fillStyle='#64748b'; ctx.font='12px sans-serif'; ctx.fillText(title, pad, 20); const barW=(w-pad*2)/Math.max(1,data.length)-18;
+  data.forEach((v,i)=>{ const x=pad + i*((w-pad*2)/Math.max(1,data.length)) + 10; const bh=((h-pad*2)*(v/max)); const y=h-pad-bh; ctx.fillStyle='#0f766e'; ctx.fillRect(x,y,barW,bh); ctx.fillStyle='#64748b'; ctx.fillText(String(v), x, y-6); wrapText(ctx,labels[i],x,h-pad+14,barW,12); });
+}
+function wrapText(ctx,text,x,y,maxWidth,lineHeight){ const words=String(text).split(' '); let line=''; let yy=y; for(let n=0;n<words.length;n++){ const test=line+words[n]+' '; const m=ctx.measureText(test).width; if(m>maxWidth && n>0){ ctx.fillText(line,x,yy); line=words[n]+' '; yy+=lineHeight; } else line=test; } ctx.fillText(line,x,yy); }
+
+function renderBookkeeping(){
+  qs('#expenseList').innerHTML = state.expenses.map(x=>`<div class="item"><div class="row"><div><div style="font-weight:900">${escapeHtml(x.category)}</div><div class="small">${x.date} • ${escapeHtml(x.note||'')}</div></div><div class="right">${currency(x.amount)}</div></div></div>`).join('') || '<div class="notice">Chưa có chi phí.</div>';
+  qs('#cashbookList').innerHTML = state.cashbook.map(x=>`<div class="item"><div class="row"><div><div style="font-weight:900">${x.type==='in'?'Tiền vào':'Tiền ra'} • ${escapeHtml(x.category||'')}</div><div class="small">${x.date} • ${escapeHtml(x.note||'')}</div></div><div class="right ${x.type==='in'?'':'mono'}" style="font-weight:900;color:${x.type==='in'?'#166534':'#b91c1c'}">${x.type==='in'?'+':'-'}${currency(x.amount)}</div></div></div>`).join('') || '<div class="notice">Chưa có giao dịch quỹ.</div>';
+  qs('#stockInList').innerHTML = state.stockIns.map(x=>`<div class="item"><div class="row"><div><div style="font-weight:900">${escapeHtml(x.itemName)}</div><div class="small">${x.date} • ${escapeHtml(x.note||'')}</div></div><div class="right">+${Number(x.qty).toLocaleString('vi-VN')} • ${currency(Number(x.qty)*Number(x.cost||0))}</div></div></div>`).join('') || '<div class="notice">Chưa có phiếu nhập kho.</div>';
+}
+function openExpenseForm(){ openModal(`<h3>Thêm chi phí</h3><div class="grid cols-2"><div><label>Nhóm chi phí</label><input id="ex_cat" placeholder="Ví dụ: Điện, Quảng cáo"></div><div><label>Số tiền</label><input id="ex_amt" type="number"></div><div style="grid-column:1/-1"><label>Ghi chú</label><input id="ex_note"></div></div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="saveExpenseBtn">Lưu</button></div>`); qs('#saveExpenseBtn').onclick=()=>{ const cat=qs('#ex_cat').value.trim(), amt=Number(qs('#ex_amt').value||0), note=qs('#ex_note').value; if(!cat||amt<=0) return toast('Nhập đủ dữ liệu'); state.expenses.unshift({id:uid('exp'),date:todayStr(),category:cat,amount:amt,note}); state.cashbook.unshift({id:uid('cash'),date:todayStr(),type:'out',category:cat,note,amount:amt}); save(); closeModal(); render(); }; }
+function openCashForm(){ openModal(`<h3>Ghi sổ quỹ</h3><div class="grid cols-2"><div><label>Loại</label><select id="cb_type"><option value="in">Tiền vào</option><option value="out">Tiền ra</option></select></div><div><label>Số tiền</label><input id="cb_amt" type="number"></div><div><label>Nhóm</label><input id="cb_cat"></div><div><label>Ghi chú</label><input id="cb_note"></div></div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="saveCashBtn">Lưu</button></div>`); qs('#saveCashBtn').onclick=()=>{ const type=qs('#cb_type').value, amt=Number(qs('#cb_amt').value||0), cat=qs('#cb_cat').value.trim(), note=qs('#cb_note').value; if(!cat||amt<=0) return toast('Nhập đủ dữ liệu'); state.cashbook.unshift({id:uid('cash'),date:todayStr(),type,category:cat,note,amount:amt}); save(); closeModal(); render(); }; }
+
+function renderHistory(){
+  const wrap=qs('#billHistoryList'); wrap.innerHTML='';
+  getPaidReceipts().forEach(r=>{ const d=document.createElement('div'); d.className='item'; d.innerHTML=`<div class="row"><div><div style="font-weight:900">${r.billNo} • ${getTableName(r.tableId)}</div><div class="small">${new Date(r.paidAt).toLocaleString('vi-VN')} • ${paymentLabel(r.paymentMethod)}</div></div><div class="right text-right"><div style="font-weight:900">${currency(r.total)}</div><div class="small">Giá vốn ${currency(r.cost||0)}</div></div></div><div class="row" style="margin-top:10px"><button class="secondary" data-reprint="${r.billNo}">Xem bill</button></div>`; wrap.appendChild(d); });
+  if(!getPaidReceipts().length) wrap.innerHTML='<div class="notice">Chưa có bill nào.</div>';
+  wrap.querySelectorAll('[data-reprint]').forEach(b=>b.onclick=()=>{ const r=state.receipts.find(x=>x.billNo===b.dataset.reprint); if(r) printBill(r); });
+}
+function renderSettings(){
+  qs('#setShopName').value=state.settings.shopName; qs('#setTableCount').value=state.settings.tableCount; qs('#setBankAcc').value=state.settings.bankAccount; qs('#setBankId').value=state.settings.bankId; qs('#setBankName').value=state.settings.bankName; qs('#setBillPrefix').value=state.settings.billPrefix||'XEKHO';
+}
+function saveSettings(){
+  state.settings.shopName=qs('#setShopName').value.trim()||'Xe Khô Chữa Lành'; state.settings.tableCount=Math.max(1,Number(qs('#setTableCount').value||12)); state.settings.bankAccount=qs('#setBankAcc').value.trim()||'0937707900'; state.settings.bankId=qs('#setBankId').value.trim()||'vietinbank'; state.settings.bankName=qs('#setBankName').value.trim()||'VU LONG'; state.settings.billPrefix=qs('#setBillPrefix').value.trim()||'XEKHO';
+  ensureTables(); save(); render(); toast('Đã lưu cài đặt');
+}
+
+function backup(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`xe-kho-pos-backup-${todayStr()}.json`; a.click(); URL.revokeObjectURL(a.href);
+}
+function restore(file){ const fr=new FileReader(); fr.onload=()=>{ try{ const data=JSON.parse(fr.result); if(!data.products||!data.inventory) throw new Error('invalid'); state=data; save(); render(); toast('Khôi phục thành công'); } catch(e){ toast('File không hợp lệ'); } }; fr.readAsText(file); }
+function exportBillsCSV(){
+  const headers=['billNo','table','paidAt','paymentMethod','total','cost']; const rows=getPaidReceipts().map(r=>[r.billNo,getTableName(r.tableId),r.paidAt,paymentLabel(r.paymentMethod),r.total,r.cost]); downloadCSV('bill-history.csv',[headers,...rows]);
+}
+function downloadCSV(name, rows){ const csv = rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+function printReport(){ const html = `<h2>${escapeHtml(state.settings.shopName)} - Báo cáo tháng ${monthStr()}</h2><p>Doanh thu hôm nay: ${currency(dailyRevenue())}</p><p>Lãi gộp tháng: ${currency(monthGross())}</p><p>Lợi nhuận tháng: ${currency(monthNet())}</p><p>Số bill tháng: ${getMonthReceipts().length}</p>`; const w=window.open('','_blank'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Báo cáo</title></head><body style="font-family:-apple-system,Arial;padding:20px">${html}</body></html>`); w.document.close(); w.print(); }
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+qsa('.navbtn').forEach(b=>b.onclick=()=>{ qsa('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); const sec=b.dataset.sec; ui.section=sec; qsa('.section').forEach(x=>x.classList.remove('active')); qs('#sec-'+sec).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); });
+qs('#btnCheckout').onclick=checkoutOrder; qs('#btnCancelTable').onclick=cancelTable; qs('#btnMoveTable').onclick=moveTable; qs('#btnShowQR').onclick=()=>{ const order=getOpenOrderByTable(ui.activeTableId); if(!order||!order.items.length) return toast('Chưa có đơn'); showBillQR(order.id, calcOrderTotal(order), getQRUrl(calcOrderTotal(order), `${state.settings.billPrefix||'XEKHO'} ${shortBill(order.id)}`)); };
+qs('#btnAddProduct').onclick=()=>openProductForm(); qs('#btnAddInventory').onclick=()=>openInventoryForm(); qs('#btnReceiveStock').onclick=()=>openStockInForm(); qs('#btnAddExpense').onclick=openExpenseForm; qs('#btnAddCash').onclick=openCashForm;
+qs('#btnSaveSettings').onclick=saveSettings; qs('#btnBackup').onclick=backup; qs('#btnRestoreOpen').onclick=()=>qs('#restoreFile').click(); qs('#restoreFile').onchange=e=>e.target.files[0]&&restore(e.target.files[0]);
+qs('#btnExportBills').onclick=exportBillsCSV; qs('#btnPrintReport').onclick=printReport; qs('#btnSeed').onclick=()=>{ state=seedState(); save(); render(); toast('Đã nạp dữ liệu mẫu'); };
+qs('#btnResetAll').onclick=()=>{ openModal(`<h3>Xoá toàn bộ dữ liệu</h3><div class="notice">Dữ liệu local trên máy sẽ bị xoá hết.</div><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="danger right" id="confirmResetAll">Xoá hết</button></div>`); qs('#confirmResetAll').onclick=()=>{ localStorage.removeItem(STORAGE_KEY); state=seedState(); save(); closeModal(); render(); toast('Đã xoá dữ liệu'); }; };
+qs('#btnNewTable').onclick=()=>{ openModal(`<h3>Mở nhanh bàn</h3><label>Chọn bàn</label><select id="openTableSelect">${state.tables.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</select><div class="row" style="margin-top:12px"><button class="secondary" onclick="closeModal()">Đóng</button><button class="right" id="confirmOpenTable">Mở bàn</button></div>`); qs('#confirmOpenTable').onclick=()=>{ ui.activeTableId=qs('#openTableSelect').value; createOrderIfMissing(ui.activeTableId); closeModal(); render(); }; };
+qs('#btnSplitHelp').onclick=()=>openModal(`<h3>Hướng dẫn nhanh</h3><div class="list"><div class="item">1. Chọn bàn → chạm món để thêm vào bill.</div><div class="item">2. Thanh toán → app tự trừ tồn kho và tạo bill.</div><div class="item">3. Menu & giá → thêm món, sửa giá, công thức nguyên liệu.</div><div class="item">4. Báo cáo → xem doanh thu, top món, in báo cáo.</div></div><div class="row" style="margin-top:12px"><button class="right" onclick="closeModal()">Đã hiểu</button></div>`);
+
+window.closeModal = closeModal;
+render();
+</script>
+</body>
+</html>
